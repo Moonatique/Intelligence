@@ -25,26 +25,24 @@ At the end the goal is to create an open and accurate library of digital data wh
 
 ## Technologies
 
-- plugin in the browser (javascript, html, css)
 - elixir and phoenix framework for the backend
 - crypto technologies for sharing and storing data
 - ... others will certainly come but haven't been chosen for now
 
 ## Roadmap
 
-1. Search for others plugins for the job
-2. Create a plugin
-3. Create a plugin which is _listing historic and favorite_ in a simple way
-4. Attach all occurencies of a web domain site to a sub list and let only appears first domain in the front plan
-5. Improve the plugin to display in a visualize way like mind mapping
-6. Enable interaction with the mind map and enable deleting
-7. Enable moving blocks of the mind mapping
-8. Attach metadata to the mind map block as _search, keyword, level of vugarisation, accuracy_. This step need more reflexion about how to encapsulate row data in a way we can search for it and organize a visualisation
-9. Store modification
-8. Adding new data from the mind mapping view
-10. Enable storing on the backend
-11. Enable sharing with other users
-12. Having a personal view and an explore view
+1. Import _https://observablehq.com/@d3/force-directed-tree_ working
+2. Modify functionality to implement add, remove and modify node
+3. Create a link between an editable schema and the tree 
+4. Attach metadata to the mind map block as _search, keyword, level of vugarisation, accuracy_. This step need more reflexion about how to 
+5. Store it in the DB and recreate it from the DB
+6. Enable account
+7. Enable project to create multiple tree view
+8. Enable a global view with every trees created from a user
+9. Enable an explore mode with every public trees
+10. Deploy the application on web
+11. Enable search by request in the forest
+12. Enable sharing with other users
 13. Enable to note the accuracy of blocks in the explore world
 14. Adapt visualisation from the accurency of blocks
 15. Enable to add data from explore view to personal view

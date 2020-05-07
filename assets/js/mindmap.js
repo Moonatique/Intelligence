@@ -1,9 +1,28 @@
 import * as d3 from 'd3'
 
 export default function chart() {
-    const width = 760,
-        height = window.innerHeight - 30,
-        radius = 3.5;
+    const WIDTH = 760,
+        HEIGHT = window.innerHeight - 30,
+        SCALE_EXTEND_MIN = 0,
+        SCALE_EXTEND_MAX = 8,
+        RADIUS = 5, //3.5        
+        CHARGE_STRENGTH = -60, // -30
+        LINK_DISTANCE = 2, // 2
+        LINK_STRENGTH = 1, // 1
+        START_ALPHA = 0.3,
+        END_ALPHA = 0,
+        COLOR_NODE = '#fff', // white
+        COLOR_LEAF = '#000', // black
+        COLOR_NODE_SELECTED = '#f00', // red
+        COLOR_LEAF_SELECTED = '#0f0', // green
+        STROKE_NODE = '#000',
+        STROKE_LEAF = '#fff',
+        STROKE_LINK_NODE = '#f90',
+        STROKE_LINK_LEAF = '#0f0',
+        STROKE_OPACITY_LINK = 0.6,
+        STROKE_WIDTH_NODE = 1.50
+        ; 
+
 
     let dataJson;
     let root;
@@ -12,26 +31,24 @@ export default function chart() {
 
     let svg = d3.select("#chart-area")
         .append("svg")
-        .attr("viewBox", [-width / 2, -height / 2, width, height]);
+        .attr("viewBox", [-WIDTH / 2, -HEIGHT / 2, WIDTH, HEIGHT]);
 
     let link = svg
         .append("g")
-        .attr("stroke", "#999")
-        .attr("stroke-opacity", 0.6)
+        // .attr("stroke", STROKE_LINK)
+        .attr("stroke-opacity", STROKE_OPACITY_LINK)
         .selectAll("line");
 
     let node = svg
         .append("g")
         .attr("class", "node")
-        .attr("fill", "#fff")
-        .attr("stroke", "#000")
-        .attr("stroke-width", 1.50) // 1.5
+        .attr("stroke-width", STROKE_WIDTH_NODE) 
         .selectAll("circle");
 
 
     let simulation = d3
         .forceSimulation(nodes)
-        .force("charge", d3.forceManyBody().strength(-30)) // -50
+        .force("charge", d3.forceManyBody().strength(CHARGE_STRENGTH)) 
         .force("x", d3.forceX())
         .force("y", d3.forceY());
 
@@ -98,12 +115,13 @@ export default function chart() {
         
         simulation
             .nodes(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(2).strength(1))// 1
+            .force("link", d3.forceLink(links).id(d => d.id).distance(LINK_DISTANCE).strength(LINK_STRENGTH))
             .on("tick", tick);
 
         link = link
             .data(links)
             .join("line")
+            .attr("stroke", d => d.target.children? STROKE_LINK_NODE : STROKE_LINK_LEAF)
             .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
             .attr("x2", d => d.target.x)
@@ -112,13 +130,15 @@ export default function chart() {
         node = node
             .data(nodes, n => n.index)
             .join("circle")
-            .attr("fill", d => ["tutu", "IRenderer"].filter(s => d.data.name.indexOf(s) == 0).length ? "#900" :  d.children ? null : "#000")
-            .attr("stroke", d => d.children ? null : "#fff")
-            .attr("r", radius)
+            .attr("fill", d => d.children ? COLOR_NODE : COLOR_LEAF)
+            .attr("stroke", d => d.children ? STROKE_NODE : STROKE_LEAF)
+            .attr("r", RADIUS)
             .attr("cx", d => d.x)
             .attr("cy", d => d.y)
             .call(drag(simulation))
-            .on("click", clicked);
+            .on("click", clicked)
+            .on("mouseover", handleMouseOver)
+            .on("mouseout", handleMouseOut);
 
         if(update) {
             node
@@ -132,8 +152,8 @@ export default function chart() {
 
         svg.call(
             d3.zoom()
-            .extent([[0, 0], [width, height]])
-            .scaleExtent([1, 8])
+            .extent([[0, 0], [WIDTH, HEIGHT]])
+            .scaleExtent([SCALE_EXTEND_MIN, SCALE_EXTEND_MAX])
             .on("zoom", zoomed(link, node))
         );
     }
@@ -168,8 +188,8 @@ export default function chart() {
         if (d3.event.defaultPrevented) return; // dragged
         d3.select(this)
             .transition()
-            .attr("fill", d => !d.clicked? "blue" : d.children? null : "#000")
-            .attr("r", d.clicked? radius : radius * 2);
+            .attr("fill", d => !d.clicked? d.children? COLOR_NODE_SELECTED : COLOR_LEAF_SELECTED : d.children? COLOR_NODE : COLOR_LEAF)
+            .attr("r", d => d.clicked? RADIUS : RADIUS * 2);
         
         if(onNodeClick) {
             onNodeClick(d, i);
@@ -177,23 +197,35 @@ export default function chart() {
         d.clicked = !d.clicked;
     }
 
+    function handleMouseOver(d, i) {
+        d3.select(this)
+            .style("cursor", "pointer")
+            .attr("fill", d => d.children? COLOR_NODE_SELECTED : COLOR_LEAF_SELECTED);
+    }
+
+    function handleMouseOut(d, i) {
+        d3.select(this)
+            .style("cursor", "default")
+            .attr("fill", d => d.clicked? d.children? COLOR_NODE_SELECTED : COLOR_LEAF_SELECTED : d.children? COLOR_NODE : COLOR_LEAF);
+    }
+
     function drag(simulation) {
     
         function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.1).restart();
-        d.fx = d.x;
-        d.fy = d.y;
+        if (!d3.event.active) simulation.alphaTarget(START_ALPHA).restart();
+            d.fx = d.x;
+            d.fy = d.y;
         }
         
         function dragged(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
+            d.fx = d3.event.x;
+            d.fy = d3.event.y;
         }
         
         function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
+            if (!d3.event.active) simulation.alphaTarget(END_ALPHA);
+            d.fx = null;
+            d.fy = null;
         }
         
         return d3.drag()
