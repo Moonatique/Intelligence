@@ -1,0 +1,4 @@
+<button id="add">add</button>
+<button id="remove">remove</button>
+<button id="update">update</button>
+<div id="chart-area"></div>
